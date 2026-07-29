@@ -969,6 +969,7 @@ func (MultusNetwork) SwaggerDoc() map[string]string {
 	return map[string]string{
 		"":            "Represents the multus cni network.",
 		"networkName": "References to a NetworkAttachmentDefinition CRD object. Format:\n<networkName>, <namespace>/<networkName>. If namespace is not\nspecified, VMI namespace is assumed.",
+		"persistIP":   "PersistIP indicates that this network attachment should request\nIP address stability across Pod recreation for the same VirtualMachine.\nThe actual behavior depends on the underlying CNI/IPAM implementation.\n+optional",
 		"default":     "Select the default network and add it to the\nmultus-cni.io/default-network annotation.",
 	}
 }

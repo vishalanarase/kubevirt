@@ -1807,6 +1807,11 @@ type MultusNetwork struct {
 	// <networkName>, <namespace>/<networkName>. If namespace is not
 	// specified, VMI namespace is assumed.
 	NetworkName string `json:"networkName"`
+	// PersistIP indicates that this network attachment should request
+	// IP address stability across Pod recreation for the same VirtualMachine.
+	// The actual behavior depends on the underlying CNI/IPAM implementation.
+	// +optional
+	PersistIP *bool `json:"persistIP,omitempty"`
 
 	// Select the default network and add it to the
 	// multus-cni.io/default-network annotation.

@@ -40,6 +40,14 @@ const (
 	// ResourceNameAnnotation represents a resource name that is associated with the network.
 	// It could be found on NetworkAttachmentDefinition objects.
 	ResourceNameAnnotation = "k8s.v1.cni.cncf.io/resourceName"
+
+	// cniArgNetworkName is the CNI arg name for the VM spec network logical name.
+	// The binding plugin CNI should read this arg and realize which logical network it should modify.
+	cniArgNetworkName = "logicNetworkName"
+
+	// cniArgPersistIP is passed to the CNI/IPAM plugin to request a stable IP
+	// allocation for a VM network across VM restarts.
+	cniArgPersistIP = "persistIP"
 )
 
 func GenerateCNIAnnotation(
@@ -69,7 +77,20 @@ func GenerateCNIAnnotationFromNameScheme(
 	for _, network := range networks {
 		if vmispec.IsSecondaryMultusNetwork(network) {
 			podInterfaceName := networkNameScheme[network.Name]
-			networkSelectionElements = append(networkSelectionElements, newAnnotationData(namespace, interfaces, network, podInterfaceName))
+			isPersistIP := false
+			if network.Multus.PersistIP != nil {
+				isPersistIP = *network.Multus.PersistIP
+			}
+			networkSelectionElements = append(
+				networkSelectionElements,
+				newAnnotationData(
+					namespace,
+					interfaces,
+					network,
+					podInterfaceName,
+					isPersistIP,
+				),
+			)
 		}
 
 		if iface := vmispec.LookupInterfaceByName(interfaces, network.Name); iface.Binding != nil {
@@ -105,6 +126,7 @@ func newAnnotationData(
 	interfaces []v1.Interface,
 	network v1.Network,
 	podInterfaceName string,
+	persistIP bool,
 ) networkv1.NetworkSelectionElement {
 	multusIface := vmispec.LookupInterfaceByName(interfaces, network.Name)
 	nadNamespacedName := NetAttachDefNamespacedName(namespace, network.Multus.NetworkName)
@@ -112,11 +134,21 @@ func newAnnotationData(
 	if multusIface != nil {
 		multusIfaceMac = multusIface.MacAddress
 	}
+
+	var cniArgs *map[string]interface{}
+	if persistIP {
+		cniArgs = &map[string]interface{}{
+			cniArgPersistIP:   true,
+			cniArgNetworkName: network.Name,
+		}
+	}
+
 	return networkv1.NetworkSelectionElement{
 		InterfaceRequest: podInterfaceName,
 		MacRequest:       multusIfaceMac,
 		Namespace:        nadNamespacedName.Namespace,
 		Name:             nadNamespacedName.Name,
+		CNIArgs:          cniArgs,
 	}
 }
 
@@ -135,10 +167,6 @@ func newBindingPluginAnnotationData(
 		return nil, nil
 	}
 	nadNamespacedName := NetAttachDefNamespacedName(namespace, plugin.NetworkAttachmentDefinition)
-
-	// cniArgNetworkName is the CNI arg name for the VM spec network logical name.
-	// The binding plugin CNI should read this arg and realize which logical network it should modify.
-	const cniArgNetworkName = "logicNetworkName"
 
 	return &networkv1.NetworkSelectionElement{
 		Namespace: nadNamespacedName.Namespace,

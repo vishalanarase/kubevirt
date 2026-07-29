@@ -865,6 +865,7 @@
         },
         "multus": {
           "networkName": "networkNameValue",
+          "persistIP": true,
           "default": true
         },
         "resourceClaim": {

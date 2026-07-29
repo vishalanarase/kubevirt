@@ -24088,6 +24088,13 @@ func schema_kubevirtio_api_core_v1_MultusNetwork(ref common.ReferenceCallback) c
 							Format:      "",
 						},
 					},
+					"persistIP": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PersistIP indicates that this network attachment should request IP address stability across Pod recreation for the same VirtualMachine. The actual behavior depends on the underlying CNI/IPAM implementation.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
 					"default": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Select the default network and add it to the multus-cni.io/default-network annotation.",

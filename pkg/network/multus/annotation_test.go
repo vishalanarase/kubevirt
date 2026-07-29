@@ -24,6 +24,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	v1 "kubevirt.io/api/core/v1"
 
@@ -102,6 +103,63 @@ var _ = Describe("Multus annotations", func() {
 				Entry("name with namespace", "namespace1/my-binding",
 					`[{"namespace": "namespace1", "name": "my-binding", "cni-args": {"logicNetworkName": "default"}}]`),
 			)
+		})
+
+		When("persistIP is requested on a Multus network", func() {
+			It("should include persistIP and logicNetworkName CNI args", func() {
+				vmi := &v1.VirtualMachineInstance{ObjectMeta: metav1.ObjectMeta{Name: "testvmi", Namespace: "default"}}
+				vmi.Spec.Networks = []v1.Network{
+					{Name: "default", NetworkSource: v1.NetworkSource{Pod: &v1.PodNetwork{}}},
+					{Name: "blue", NetworkSource: v1.NetworkSource{Multus: &v1.MultusNetwork{
+						NetworkName: "test1",
+						PersistIP:   ptr.To(true),
+					}}},
+				}
+				vmi.Spec.Domain.Devices.Interfaces = []v1.Interface{
+					{Name: "default", InterfaceBindingMethod: v1.InterfaceBindingMethod{Masquerade: &v1.InterfaceMasquerade{}}},
+					{Name: "blue"},
+				}
+
+				Expect(multus.GenerateCNIAnnotation(
+					vmi.Namespace,
+					vmi.Spec.Domain.Devices.Interfaces,
+					vmi.Spec.Networks,
+					nil,
+				)).To(MatchJSON(
+					`[{"name":"test1","namespace":"default","interface":"pod16477688c0e","cni-args":{"logicNetworkName":"blue","persistIP":true}}]`,
+				))
+			})
+
+			It("should omit CNI args when persistIP is false or unset", func() {
+				vmi := &v1.VirtualMachineInstance{ObjectMeta: metav1.ObjectMeta{Name: "testvmi", Namespace: "default"}}
+				vmi.Spec.Networks = []v1.Network{
+					{Name: "default", NetworkSource: v1.NetworkSource{Pod: &v1.PodNetwork{}}},
+					{Name: "blue", NetworkSource: v1.NetworkSource{Multus: &v1.MultusNetwork{
+						NetworkName: "test1",
+						PersistIP:   ptr.To(false),
+					}}},
+					{Name: "red", NetworkSource: v1.NetworkSource{Multus: &v1.MultusNetwork{
+						NetworkName: "test2",
+					}}},
+				}
+				vmi.Spec.Domain.Devices.Interfaces = []v1.Interface{
+					{Name: "default", InterfaceBindingMethod: v1.InterfaceBindingMethod{Masquerade: &v1.InterfaceMasquerade{}}},
+					{Name: "blue"},
+					{Name: "red"},
+				}
+
+				Expect(multus.GenerateCNIAnnotation(
+					vmi.Namespace,
+					vmi.Spec.Domain.Devices.Interfaces,
+					vmi.Spec.Networks,
+					nil,
+				)).To(MatchJSON(
+					`[
+						{"name":"test1","namespace":"default","interface":"pod16477688c0e"},
+						{"name":"test2","namespace":"default","interface":"podb1f51a511f1"}
+					]`,
+				))
+			})
 		})
 	})
 })

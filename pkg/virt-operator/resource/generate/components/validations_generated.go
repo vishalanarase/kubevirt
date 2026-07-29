@@ -7849,6 +7849,12 @@ var CRDsValidation map[string]string = map[string]string{
                               <networkName>, <namespace>/<networkName>. If namespace is not
                               specified, VMI namespace is assumed.
                             type: string
+                          persistIP:
+                            description: |-
+                              PersistIP indicates that this network attachment should request
+                              IP address stability across Pod recreation for the same VirtualMachine.
+                              The actual behavior depends on the underlying CNI/IPAM implementation.
+                            type: boolean
                         required:
                         - networkName
                         type: object
@@ -14067,6 +14073,12 @@ var CRDsValidation map[string]string = map[string]string{
                       <networkName>, <namespace>/<networkName>. If namespace is not
                       specified, VMI namespace is assumed.
                     type: string
+                  persistIP:
+                    description: |-
+                      PersistIP indicates that this network attachment should request
+                      IP address stability across Pod recreation for the same VirtualMachine.
+                      The actual behavior depends on the underlying CNI/IPAM implementation.
+                    type: boolean
                 required:
                 - networkName
                 type: object
@@ -20786,6 +20798,12 @@ var CRDsValidation map[string]string = map[string]string{
                               <networkName>, <namespace>/<networkName>. If namespace is not
                               specified, VMI namespace is assumed.
                             type: string
+                          persistIP:
+                            description: |-
+                              PersistIP indicates that this network attachment should request
+                              IP address stability across Pod recreation for the same VirtualMachine.
+                              The actual behavior depends on the underlying CNI/IPAM implementation.
+                            type: boolean
                         required:
                         - networkName
                         type: object
@@ -25982,6 +26000,12 @@ var CRDsValidation map[string]string = map[string]string{
                                       <networkName>, <namespace>/<networkName>. If namespace is not
                                       specified, VMI namespace is assumed.
                                     type: string
+                                  persistIP:
+                                    description: |-
+                                      PersistIP indicates that this network attachment should request
+                                      IP address stability across Pod recreation for the same VirtualMachine.
+                                      The actual behavior depends on the underlying CNI/IPAM implementation.
+                                    type: boolean
                                 required:
                                 - networkName
                                 type: object
@@ -31669,6 +31693,12 @@ var CRDsValidation map[string]string = map[string]string{
                                           <networkName>, <namespace>/<networkName>. If namespace is not
                                           specified, VMI namespace is assumed.
                                         type: string
+                                      persistIP:
+                                        description: |-
+                                          PersistIP indicates that this network attachment should request
+                                          IP address stability across Pod recreation for the same VirtualMachine.
+                                          The actual behavior depends on the underlying CNI/IPAM implementation.
+                                        type: boolean
                                     required:
                                     - networkName
                                     type: object

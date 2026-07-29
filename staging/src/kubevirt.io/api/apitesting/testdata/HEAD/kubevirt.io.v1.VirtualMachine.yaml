@@ -673,6 +673,7 @@ spec:
       - multus:
           default: true
           networkName: networkNameValue
+          persistIP: true
         name: nameValue
         pod:
           vmIPv6NetworkCIDR: vmIPv6NetworkCIDRValue

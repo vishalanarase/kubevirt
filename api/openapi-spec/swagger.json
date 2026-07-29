@@ -16791,6 +16791,10 @@
       "description": "References to a NetworkAttachmentDefinition CRD object. Format: \u003cnetworkName\u003e, \u003cnamespace\u003e/\u003cnetworkName\u003e. If namespace is not specified, VMI namespace is assumed.",
       "type": "string",
       "default": ""
+     },
+     "persistIP": {
+      "description": "PersistIP indicates that this network attachment should request IP address stability across Pod recreation for the same VirtualMachine. The actual behavior depends on the underlying CNI/IPAM implementation.",
+      "type": "boolean"
      }
     }
    },
